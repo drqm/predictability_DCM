@@ -77,7 +77,7 @@ fam_prob <- ggplot(plong3,aes(family2,probability,fill = family)) +
   facet_wrap(~factor,ncol = 4) +
   xlab('model family') +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 60, vjust = 0.5)) +
+  theme(legend.position = 'none',axis.text.x = element_text(angle = 60, vjust = 0.5)) +
   coord_flip();fam_prob
 
 ## Plot probability of models after BMA
@@ -92,7 +92,7 @@ par_prob <- ggplot(plong[plong$inference_type == 'model reduction',],aes(paramet
   xlab('connection') +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 60, vjust = 0.5, size = 7),
-        legend.position = 'bottom') +# +
+        legend.position = 'none') +# +
   labs(fill = "Model family: ") +
   coord_flip();par_prob
 
@@ -100,11 +100,11 @@ par_prob <- ggplot(plong[plong$inference_type == 'model reduction',],aes(paramet
 
 #a_b <- plot_grid(bma_pars,fam_prob, ncol =1,labels = c('a)','b)')); a_b
 #all <- plot_grid(a_b,fam_prob, ncol = 2, labels = c('','c)'),rel_widths = c(4,1));all
-all <- plot_grid(bma_pars,fam_prob, par_prob, ncol = 1, align = 'v',
-                 axis  = 'b',labels = c('a)','b)','c)'),rel_heights = c(2,0.8,1.2));all
-
-ggsave('results/figures/pars_and_probs.png',plot=all, height = 270, width = 190,  units = 'mm', dpi = 300)
-
+legend <- get_legend(
+  # create some space to the left of the legend
+  bma_pars)
+bma_pars = bma_pars + theme(legend.position = 'none')
+\
 ## plot network structure:
 # 
 # cmatrix = matrix(c(1,0,1,0,0,

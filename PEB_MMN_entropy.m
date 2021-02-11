@@ -185,26 +185,26 @@ writetable(joint_table,[out_dir,'model_comp_joint_report.csv'])
 
 %% Extract parameter values
 par_names = {'rA1_rA1'; 'rA1_rSTG';'lA1_lA1';'lA1_lSTG';'rSTG_rA1';
-             'rSTG_rSTG';'rSTG_rFOP';'lSTG_lA1';'lSTG_lSTG';'rFOP_rSTG';'rFOP_rFOP'};
+    'rSTG_rSTG';'rSTG_rFOP';'lSTG_lA1';'lSTG_lSTG';'rFOP_rSTG';'rFOP_rFOP'};
 BMA_pars = table(par_names,BMA_entropy.Ep(1:11,1),BMA_entropy.Cp(1:11,1),BMA_entropy.Pw',...
-                 BMA_entropy.Ep(12:22,1),BMA_entropy.Cp(12:22,1),BMA_entropy.Px',...
-                 BMA_expertise.Ep(12:22,1),BMA_expertise.Cp(12:22,1),BMA_expertise.Px',...
-                 BMA_interaction.Ep(12:22,1),BMA_interaction.Cp(12:22,1),BMA_interaction.Px');
+    BMA_entropy.Ep(12:22,1),BMA_entropy.Cp(12:22,1),BMA_entropy.Px',...
+    BMA_expertise.Ep(12:22,1),BMA_expertise.Cp(12:22,1),BMA_expertise.Px',...
+    BMA_interaction.Ep(12:22,1),BMA_interaction.Cp(12:22,1),BMA_interaction.Px');
 BMA_pars_vnames = {'parameter_name','MMN_mu','MMN_var','MMN_prob',...
-                    'entropy_mu','entropy_var','entropy_prob',...
-                    'expertise_mu','expertise_var','expertise_prob',...
-                    'interaction_mu','interaction_var','interaction_prob'};
-        
+    'entropy_mu','entropy_var','entropy_prob',...
+    'expertise_mu','expertise_var','expertise_prob',...
+    'interaction_mu','interaction_var','interaction_prob'};
+
 BMA_pars.Properties.VariableNames = BMA_pars_vnames;
 
 writetable(BMA_pars,[out_dir,'BMA_parameters.csv'])
 
 greedy_cov = spdiags(BMA_greedy.Cp);
 BMA_pars_greedy = table(par_names,BMA_greedy.Ep(1:11,1),greedy_cov(1:11,1),BMA_greedy.Pp(1:11,1),...
-                        BMA_greedy.Ep(12:22,1),greedy_cov(12:22,1),BMA_greedy.Pp(12:22,1),...
-                        BMA_greedy.Ep(23:33,1),greedy_cov(23:33,1),BMA_greedy.Pp(23:33,1),...
-                        BMA_greedy.Ep(34:44,1),greedy_cov(34:44,1),BMA_greedy.Pp(34:44,1));
-                    
+    BMA_greedy.Ep(12:22,1),greedy_cov(12:22,1),BMA_greedy.Pp(12:22,1),...
+    BMA_greedy.Ep(23:33,1),greedy_cov(23:33,1),BMA_greedy.Pp(23:33,1),...
+    BMA_greedy.Ep(34:44,1),greedy_cov(34:44,1),BMA_greedy.Pp(34:44,1));
+
 BMA_pars_greedy.Properties.VariableNames = BMA_pars_vnames;
 
 writetable(BMA_pars_greedy,[out_dir,'BMA_parameters_greedy.csv'])
@@ -254,14 +254,14 @@ for g = 1:length(groups)
         
         figure('Color','white');
         gg = gcf;
-
+        
         
         set(gg, 'Units', 'normalized')
         set(gg, 'Renderer','painters')
         set(gg, 'Position', [0 0 0.8 0.8])
         set(gca,'fontsize',14)
         set(gg, 'PaperOrientation', 'portrait')
-        %set(gg, 'PaperUnits', 'normalized')        
+        %set(gg, 'PaperUnits', 'normalized')
         %set(gg, 'PaperPosition', [0 0 10 9])
         %set(gg, 'PaperSize', [10 9])
         
@@ -378,5 +378,206 @@ for g = 1:length(groups)
     end
 end
 close all
+
+%% topomaps
+channs = GCM{1,1}.xY.name;
+times = GCM{1,1}.xY.Time;
+load(GCM{1,1}.xY.Dfile)
+groups = {'non-musicians','musicians'};%,'ALL'};
+sub_idcs = {[1:20],[21:40]};%,[1:40]};
+conds = {'HP','LP'};
+
+dummy = [];
+dummy.dimord = 'chan_time';
+dummy.label = channs;
+dummy.time  = times(times>=0 & times <= 300);
+dummy.grad = D.sensors.meg;
+cfg = [];
+cfg.parameter = 'avg';
+cfg.comment = 'no';
+cfg.gridscale = 200;
+%cfg.layout = 'neuromag306mag.lay';
+cfg.xlim = [175, 210];
+cfg.marker = 'off';
+cfg.style = 'both_imsat';
+% factor to scale the data:
+
+scf = 3;
+figure('Color','white');
+gg = gcf;
+set(gg, 'Units', 'normalized')
+set(gg, 'Renderer','painters')
+set(gg, 'Position', [0 0 0.8 0.8])
+set(gca,'fontsize',14)
+set(gg, 'PaperOrientation', 'landscape')
+set(gg, 'PaperUnits', 'centimeters')
+set(gg, 'PaperPosition', [0 0 25 15])
+set(gg, 'PaperSize', [25 15])
+for g = 1:length(groups)
+    group = groups{g};
+    for c = 1:length(conds)
+        sub_idx = sub_idcs{g};
+        cond = conds{c};
+        
+        cfg.zlim = [-25 25]*scf;
+        dummy.avg = mean(grand_avg.(cond).diff.obs(:,:,sub_idx),3).*(scf/10^-3);
+        ax = subplot(2,4,4*(g-1) + c);
+        ft_topoplotER(cfg, dummy);
+        if c == 1 & g == 1
+            cbar = colorbar();
+            cbar.Location = 'south';
+            cbar.Position = [ax.Position(1)+0.11,ax.Position(2)-0.1,ax.Position(3),0.04];
+            cbar.Label.String = 'fT';
+            aa = annotation('textarrow',[0,0],[0,0],'String','observed',...
+                'HeadStyle','none','LineStyle','none','FontSize',16);
+            set(aa,'Position',[ax.Position(1) + 0.18, ax.Position(2)+0.35,0.02,0.2])
+            set(aa,'VerticalAlignment','middle')
+            set(aa,'HorizontalAlignment','center')
+        end
+        if c == 1
+            aa = annotation('textarrow',[0,0],[0,0],'String',group,...
+                'HeadStyle','none','LineStyle','none','FontSize',16,...
+                'TextRotation',90);
+            set(aa,'Position',[ax.Position(1) - 0.025, ax.Position(2)+0.15,0.02,0.2])
+            set(aa,'VerticalAlignment','middle')
+            set(aa,'HorizontalAlignment','center')
+        end
+        if g == 2
+            aa = annotation('textarrow',[0,0],[0,0],'String',cond,...
+                'HeadStyle','none','LineStyle','none','FontSize',16);
+            set(aa,'Position',[ax.Position(1)+0.08, ax.Position(2)-0.025,0.02,0.2])
+            set(aa,'VerticalAlignment','middle')
+            set(aa,'HorizontalAlignment','center')
+        end
+        cfg.zlim = [-15 15]*scf;
+        ax = subplot(2,4,4*(g-1) + c + 2);
+        dummy.avg = mean(grand_avg.(cond).diff.pred(:,:,sub_idx),3).*(scf/10^-3);
+        ft_topoplotER(cfg, dummy);
+        
+        if c == 1 & g == 1
+            cbar = colorbar();
+            cbar.Location = 'south';
+            cbar.Position = [ax.Position(1)+0.11,ax.Position(2)-0.1,ax.Position(3),0.04];
+            cbar.Label.String = 'fT';
+            aa = annotation('textarrow',[0,0],[0,0],'String','predicted',...
+                'HeadStyle','none','LineStyle','none','FontSize',16);
+            set(aa,'Position',[ax.Position(1) + 0.18, ax.Position(2)+0.35,0.02,0.2])
+            set(aa,'VerticalAlignment','middle')
+            set(aa,'HorizontalAlignment','center')
+        end
+        
+        if g == 2
+            aa = annotation('textarrow',[0,0],[0,0],'String',cond,...
+                'HeadStyle','none','LineStyle','none','FontSize',16);
+            set(aa,'Position',[ax.Position(1)+0.08, ax.Position(2)-0.025,0.02,0.2])
+            set(aa,'VerticalAlignment','middle')
+            set(aa,'HorizontalAlignment','center')
+        end
+    end
 end
+
+print([fig_dir,'topomaps_obs_vs_pred'],'-dpng')
+print([fig_dir,'topomaps_obs_vs_pred'],'-dpdf')
+
+%% Channel selection plots
+
+channs = GCM{1,1}.xY.name;
+times = GCM{1,1}.xY.Time;
+times  = times(times>=0 & times <= 300);
+groups = {'non-musicians','musicians'};%,'ALL'};
+sub_idcs = {[1:20],[21:40]};%,[1:40]};
+conds = {'HP','LP'};
+hems = {'Left','Right'};
+hem_channs = {{'MEG1621','MEG1611','MEG0231','MEG0241'},...
+    {'MEG2421','MEG2411','MEG1331','MEG1341'}};
+types = {'obs','pred'};
+typenames = {'observed','predicted'};
+% factor to scale the data:
+ylims = {[-110,110],[-70,70]};
+scf = 3;
+figure('Color','white');
+gg = gcf;
+set(gg, 'Units', 'normalized')
+set(gg, 'Renderer','painters')
+set(gg, 'Position', [0 0 0.8 0.8])
+set(gca,'fontsize',12)
+set(gg, 'PaperOrientation', 'landscape')
+set(gg, 'PaperUnits', 'centimeters')
+set(gg, 'PaperPosition', [0 0 25 18])
+set(gg, 'PaperSize', [25 18])
+
+for c = 1:length(conds)
+    cond = conds{c};
+    for h = 1:length(hems)
+        hem = hems{h};
+        cchans = hem_channs{h};
+        chidx = find(ismember(channs,cchans));
+        for t = 1:length(types)
+            type = types{t};
+            cfg.ylim = [-25 25]*scf;
+            avg_nmus = mean(mean(grand_avg.(cond).diff.(type)(:,chidx,1:20),2),3).*(scf/10^-3);
+            se_nmus = (std(mean(grand_avg.(cond).diff.(type)(:,chidx,1:20),2),[],3).*(scf/10^-3))/sqrt(20);
+            upper_nmus = avg_nmus + 1.96*se_nmus;
+            lower_nmus = avg_nmus - 1.96*se_nmus;
+            
+            avg_mus = mean(mean(grand_avg.(cond).diff.(type)(:,chidx,21:40),2),3).*(scf/10^-3);
+            se_mus = (std(mean(grand_avg.(cond).diff.(type)(:,chidx,21:40),2),[],3).*(scf/10^-3))/sqrt(20);
+            upper_mus = avg_mus + 1.96*se_mus;
+            lower_mus = avg_mus - 1.96*se_mus;
+            terror = [times,fliplr(times)];
+            
+            ax = subplot(2,4,4*(c-1) + t + 2*(h-1));
+            fill(terror,[lower_mus',fliplr(upper_mus')],'r','LineStyle','none');hold on;
+            alpha(.1)
+            fill(terror,[lower_nmus',fliplr(upper_nmus')],'b','LineStyle','none');hold on;
+            alpha(.1)
+            hold on;
+            pnmus = plot(times,avg_nmus,'color','b','LineWidth',1.5); hold on
+            pmus = plot(times,avg_mus,'color','r','LineWidth',1.5); hold on
+            hline(0, 'color','k')
+            ylim(ylims{t})
+            xlim([0,300])
+            if t == 1 & h == 1 & c == 1
+                lgd = legend([pmus,pnmus],{'musicians','non-musicians'},...
+                    'Orientation','horizontal','Box','off','Position',...
+                    [0.5,0.4,0.05,0.2],'FontSize',12);
+                xlabel('Time (ms)')
+                ylabel('Field strength (fT)')
+                
+            end
+            if t == 1 & h == 1
+                aa = annotation('textarrow',[0,0],[0,0],'String',cond,...
+                    'HeadStyle','none','LineStyle','none','FontSize',14);
+                set(aa,'Position',[ax.Position(1)+.01,...
+                    ax.Position(2)+0.36,0.02,0.2])
+                set(aa,'VerticalAlignment','middle')
+                set(aa,'HorizontalAlignment','center')
+            end
+            if t==1 & c == 1
+                aa = annotation('textarrow',[0,0],[0,0],'String',[hem ' hemisphere'],...
+                    'HeadStyle','none','LineStyle','none','FontSize',14);
+                set(aa,'Position',[ax.Position(1)+.18,...
+                    ax.Position(2)+0.38,0.02,0.2])
+                set(aa,'VerticalAlignment','middle')
+                set(aa,'HorizontalAlignment','center')
+            end
+            if c == 2
+                aa = annotation('textarrow',[0,0],[0,0],'String',typenames{t},...
+                    'HeadStyle','none','LineStyle','none','FontSize',14);
+                set(aa,'Position',[ax.Position(1)+ .08,...
+                    ax.Position(2)+-0.05,0.02,0.2])
+                set(aa,'VerticalAlignment','middle')
+                set(aa,'HorizontalAlignment','center')
+                
+            end
+        end
+    end
+end
+
+print([fig_dir,'channsel_obs_vs_pred'],'-dpng')
+print([fig_dir,'channsel_obs_vs_pred'],'-dpdf')
+
+end
+
+
 
