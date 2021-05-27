@@ -4,6 +4,9 @@ In this repository you will find the scripts necessary to reproduce the analyses
 
 Quiroga-Martinez, D. R., Hansen, N. C., Højlund, A., Pearce, M., Brattico, E., Holmes, E., Friston, K., & Vuust, P. (2021). Musicianship and melodic predictability enhance neural gain in auditory cortex during pitch deviance detection. BioRxiv, 2021.02.11.430838. https://doi.org/10.1101/2021.02.11.430838
 
+The results of the study are obtained with the PEB_MMN_entropy.m and plot_pars_and_probs.R scripts. This requires downloading the data stored in the OSF repository:
+https://doi.org/10.17605/osf.io/bdr73
+
 These are the scripts and files included in the repository:
 
 * convert_to_spm_m_nm_trials.m: Matlab function to transform Fieldtrip evoked responses into SPM format.
