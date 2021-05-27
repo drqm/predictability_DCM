@@ -13,4 +13,13 @@ These are the scripts and files included in the repository:
 * inversion_wrapper_m_nm.m: Matlab wrapper to call lead_field.m and inversion.m
 * DCM_invert.m: Matlab function to fit DCM models.
 * DCM_inversion_wrapper_m_nm.m: Matlab wrapper to call DCM_invert.
-
+* PEB_MMN_entropy.m: Matlab script to run the group-level analyses of DCM models.
+* plot_sources.m: Matlab script to plot the output of source statistics.
+* plot_surfaces.m: Matlab script to plot the DCM network in a glass-brain surface. 
+* plot_pars_and_probs.R: R script to plot the output of group-level analyses.
+* analyze_demographics.R: R script to analyze demographic info.
+* Left_edges.edge and Right_edges.edge: text files including connection matrices to plot the edges of the DCM network.
+* Left_nodes.node and Right_nodes.node: text files including coordinates of the nodes in the DCM network for plotting.
+* participants_info_anonymized_m_nm.csv: csv file with anonymous participant information.
+* demographics_table.csv: csv file with summary demographics.
+* results/: folder with the output figures.
